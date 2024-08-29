@@ -1,0 +1,29 @@
+library(dplyr)
+
+# Load the two CSV files
+df1 <- read.csv("../csv/Model.csv", stringsAsFactors = FALSE)
+df3 <- read.csv("../csv/fake_dummy_AUC_MATRIX.csv", stringsAsFactors = FALSE)
+
+# Take the first column of df3
+df3_cell_line_collated <- df3[, 1]
+
+# Strip the strings after the underscore in the first column of df3
+df3_cell_line_collated <- sapply(strsplit(df3_cell_line_collated, "_"), `[`, 1)
+
+# Keep ModelID and CellLineName in a new dataframe
+df1_model_id <- df1$ModelID
+df1_cell_line_name <- df1$StrippedCellLineName
+
+# Define a new column in df3 called ModelID
+df3$ModelID <- ""
+
+# Match the cell line names and assign ModelID from df1 to df3
+for (i in seq_along(df3_cell_line_collated)) {
+  match_index <- which(df1_cell_line_name == df3_cell_line_collated[i])
+  if (length(match_index) > 0) {
+    df3$ModelID[i] <- df1_model_id[match_index]
+  }
+}
+
+# Save the new df3 with ModelID
+write.csv(df3, "../exported-csv/fake_dummy_AUC_MATRIX_with_ACH.csv", row.names = FALSE)
